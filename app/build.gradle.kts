@@ -39,7 +39,7 @@ android {
     }
     applicationVariants.all {
         outputs.all {
-            val apkName = "dice-${name}.apk"
+            val apkName = "dice-roller.apk"
             (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName = apkName
         }
     }
