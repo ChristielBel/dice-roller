@@ -9,7 +9,6 @@ import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,13 +27,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.diceroller.ui.theme.DiceRollerTheme
+import com.example.diceroller.ui.theme.lightBlue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -77,6 +77,8 @@ val BounceInterpolatorEasing = Easing { fraction ->
 @Composable
 fun DiceWithButtonAndImage(modifier: Modifier = Modifier) {
     var result by remember { mutableStateOf(1) }
+    var isAnimating by remember { mutableStateOf(false) }
+
     val rotation = remember { Animatable(0f) }
     val offsetX = remember { Animatable(0f) }
     val offsetY = remember { Animatable(0f) }
@@ -109,37 +111,44 @@ fun DiceWithButtonAndImage(modifier: Modifier = Modifier) {
                 )
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
-            scope.launch {
-                launch {
-                    rotation.animateTo(
-                        targetValue = rotation.value + 1080f,
-                        animationSpec = tween(1000, easing = FastOutSlowInEasing)
-                    )
-                }
-                launch {
-                    scale.animateTo(1.2f, tween(100, easing = LinearOutSlowInEasing))
-                    scale.animateTo(1f, tween(150))
-                }
-                launch {
-                    repeat(6) {
-                        offsetX.animateTo(
-                            if (it % 2 == 0) 20f else -20f,
-                            tween(50)
+        Button(
+            onClick = {
+                isAnimating = true
+                scope.launch {
+                    launch {
+                        rotation.animateTo(
+                            targetValue = rotation.value + 1080f,
+                            animationSpec = tween(1000, easing = FastOutSlowInEasing)
                         )
                     }
-                    offsetX.animateTo(0f)
-                }
-                launch {
-                    offsetY.animateTo(-30f, tween(150, easing = FastOutLinearInEasing))
-                    offsetY.animateTo(0f, tween(250, easing = BounceInterpolatorEasing))
-                }
+                    launch {
+                        scale.animateTo(1.2f, tween(100, easing = LinearOutSlowInEasing))
+                        scale.animateTo(1f, tween(150))
+                    }
+                    launch {
+                        repeat(6) {
+                            offsetX.animateTo(
+                                if (it % 2 == 0) 20f else -20f,
+                                tween(50)
+                            )
+                        }
+                        offsetX.animateTo(0f)
+                    }
+                    launch {
+                        offsetY.animateTo(-30f, tween(150, easing = FastOutLinearInEasing))
+                        offsetY.animateTo(0f, tween(250, easing = BounceInterpolatorEasing))
+                    }
 
-                delay(900)
-                result = (1..6).random()
-            }
-        }) {
+                    delay(900)
+                    result = (1..6).random()
+                    isAnimating = false
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = lightBlue),
+            enabled = !isAnimating
+        ) {
             Text(stringResource(R.string.roll))
+
         }
     }
 }
